@@ -10,7 +10,9 @@ FROM golang:${GO_VERSION}-alpine AS tools
 
 ENV TOOLS_VERSION 0.8.1
 
-RUN apk update && apk add --no-cache git gcc musl-dev \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
+    && apk update && apk add --no-cache git gcc musl-dev \
+    && go env -w GOPROXY=https://goproxy.cn,direct \
     && go install github.com/timescale/timescaledb-tune/cmd/timescaledb-tune@latest \
     && go install github.com/timescale/timescaledb-parallel-copy/cmd/timescaledb-parallel-copy@latest
 
@@ -60,6 +62,7 @@ RUN set -ex \
     && rm -v /opt/bitnami/postgresql/lib/.emptyfile \
     && rm -v /opt/bitnami/postgresql/share/extension/.emptyfile \
     && mkdir -p /var/lib/apt/lists/partial \
+    && sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list \
     && apt-get update \
     && apt-get -y install \
             \

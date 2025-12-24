@@ -22,7 +22,6 @@ default: image
 
 .build_$(PG_BASE_IMAGE)_$(TS_VERSION)_$(PG_VER): Dockerfile
 	test -n "$(TS_VERSION)"  # TS_VERSION
-	test -n "$(PREV_TS_VERSION)"  # PREV_TS_VERSION
 	test -n "$(PG_BASE_IMAGE)"  # PG_BASE_IMAGE
 	test -n "$(PG_IMAGE_SUFFIX)"  # PG_IMAGE_SUFFIX
 	docker build -f ./Dockerfile --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg PG_BASE_IMAGE=$(PG_BASE_IMAGE) $(TAG) ..
