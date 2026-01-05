@@ -100,4 +100,33 @@ clean:
 	rm -f *~ .build_* .multi_*
 	-docker buildx rm multibuild
 
-.PHONY: default image push push-oss oss multi multi-oss clean all
+# CloudNativePG build settings
+CLOUDNATIVEPG_VERSION=$(shell echo $(PG_VER_NUMBER) | awk '{print $$1 == "16" ? "16.11" : $$1 == "17" ? "17.7" : $$1 == "18" ? "18.1" : "17.7"}')
+CNPG_TAG_VERSION=$(ORG)/$(NAME):$(CLOUDNATIVEPG_VERSION)-$(TS_VERSION)-standard-trixie
+CNPG_TAG_LATEST=$(ORG)/$(NAME):$(PG_VER)-latest-standard-bookworm
+
+CNPG_BUILD_ARGS= --build-arg CLOUDNATIVEPG_VERSION=$(CLOUDNATIVEPG_VERSION) \
+		--build-arg POSTGRES_VERSION=$(PG_VER_NUMBER) \
+		--build-arg TIMESCALE_VERSION=$(TS_VERSION)
+
+.build_cnpg_$(PG_VER): Dockerfile.cloudnativepg
+	test -n "$(CLOUDNATIVEPG_VERSION)"  # CLOUDNATIVEPG_VERSION
+	docker build $(CNPG_BUILD_ARGS) -t $(CNPG_TAG_VERSION) -f Dockerfile.cloudnativepg .
+	touch .build_cnpg_$(PG_VER)
+
+multi_cnpg: Dockerfile.cloudnativepg
+	test -n "$(CLOUDNATIVEPG_VERSION)"  # CLOUDNATIVEPG_VERSION
+	docker buildx create --platform linux/amd64,linux/arm64 --name cnpg_multibuild --use
+	docker buildx inspect cnpg_multibuild --bootstrap
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		$(CNPG_BUILD_ARGS) \
+		-t $(CNPG_TAG_VERSION) $(PUSH_MULTI) -f Dockerfile.cloudnativepg .
+	touch .multi_cnpg_$(PG_VER)
+	docker buildx rm cnpg_multibuild
+
+push_cnpg: .build_cnpg_$(PG_VER)
+	docker push $(CNPG_TAG_VERSION)
+
+image_cnpg: .build_cnpg_$(PG_VER)
+
+.PHONY: default image push push-oss oss multi multi-oss clean all image_cnpg push_cnpg multi_cnpg
