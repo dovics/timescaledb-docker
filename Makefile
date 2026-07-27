@@ -101,7 +101,7 @@ clean:
 	-docker buildx rm multibuild
 
 # CloudNativePG build settings
-CLOUDNATIVEPG_VERSION=$(shell echo $(PG_VER_NUMBER) | awk '{print $$1 == "16" ? "16.11" : $$1 == "17" ? "17.7" : $$1 == "18" ? "18.1" : "17.7"}')
+CLOUDNATIVEPG_VERSION=$(shell echo $(PG_VER_NUMBER) | awk '{print $$1 == "16" ? "16.11" : $$1 == "17" ? "17.9" : $$1 == "18" ? "18.1" : "17.9"}')
 CNPG_TAG_VERSION=$(ORG)/$(NAME):$(CLOUDNATIVEPG_VERSION)-$(TS_VERSION)-standard-trixie
 CNPG_TAG_LATEST=$(ORG)/$(NAME):$(PG_VER)-latest-standard-bookworm
 
